@@ -90,16 +90,27 @@ def prepare_workout(goal, bench_now, bench_after, squat_now, squat_after,
     return workout
 
 def handler(event, context):
-    variables = json.loads(event['body'])
-
-    goal = variables['goal']
-    bench_now = int(variables['bench_now'])
-    deadlift_now = int(variables['deadlift_now'])
-    squat_now = int(variables['squat_now'])
-    bench_after = int(variables['bench_after'])
-    deadlift_after = int(variables['deadlift_after'])
-    squat_after = int(variables['squat_after'])
-    fitness_level = int(variables['fitness_level'])
+    try:
+        variables = json.loads(event['body'])
+        goal = variables['goal']
+        bench_now = int(variables['bench_now'])
+        deadlift_now = int(variables['deadlift_now'])
+        squat_now = int(variables['squat_now'])
+        bench_after = int(variables['bench_after'])
+        deadlift_after = int(variables['deadlift_after'])
+        squat_after = int(variables['squat_after'])
+        fitness_level = int(variables['fitness_level'])
+    except ValueError as e:
+        logger.error("ERROR: Variables passed incorrectly!")
+        logger.error(e)
+        return {
+            'statusCode': 400,
+            'headers': {
+            "Access-Control-Allow-Origin" : "*",
+            "Access-Control-Allow-Credentials" : 'true'
+            },
+            'body': json.dumps(e)
+        }
 
     workout = prepare_workout(goal, bench_now, bench_after, squat_now, squat_after,
                               deadlift_now, deadlift_after, fitness_level)

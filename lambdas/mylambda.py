@@ -100,8 +100,7 @@ def prepare_workout_plan(goal, bench_now, bench_after, squat_now, squat_after,
             
             workout.append(exercise_data)
         
-        workout_plan.append({"day": day,
-                             "workout": workout})
+        workout_plan.append({day: workout})
     
     return workout_plan
 

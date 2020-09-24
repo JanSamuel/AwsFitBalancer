@@ -4,6 +4,8 @@ import json
 import os
 import psycopg2
 import random
+import boto3
+
 
 goal_multiplier_dict = {'endurance': 0.6, 'cutting': 0.8, 'maintain': 0.75,
                    'bulking': 0.75, 'strenght': 0.85}
@@ -21,19 +23,29 @@ days_dict = {3: ['Monday', 'Wednesday', 'Friday'],
              5: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
              6: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']}
 
-# rds settings
-rds_host  = "mydatabase.cv33flw3gf8i.us-east-1.rds.amazonaws.com"
-rds_username = "postgres"
-rds_user_pwd = "kotlecik"
-rds_db_name = ""
+ENDPOINT="mydatabase.cv33flw3gf8i.us-east-1.rds.amazonaws.com"
+PORT="5432"
+USR="db_userx"
+REGION="us-east-1"
+DBNAME="postgres"
+
+#gets the credentials from .aws/credentials
+session = boto3.Session()
+client = boto3.client('rds')
+
+token = client.generate_db_auth_token(DBHostname=ENDPOINT, Port=PORT, DBUsername=USR, Region=REGION)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 try:
     conn_string = "host=%s user=%s password=%s dbname=%s" % \
-                    (rds_host, rds_username, rds_user_pwd, rds_db_name)
+                    (ENDPOINT, USR, token, DBNAME)
     conn = psycopg2.connect(conn_string)
+    cur = conn.cursor()
+    cur.execute("""SELECT now()""")
+    query_results = cur.fetchall()
+    print(query_results)
 except psycopg2.Error as e:
     logger.error("ERROR: Could not connect to Postgres instance.")
     logger.error(e)

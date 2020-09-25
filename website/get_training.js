@@ -40,12 +40,13 @@ makeRadioField(form, "days", "5", "5");
 makeRadioField(form, "days", "6", "6");
 form.appendChild(br.cloneNode());
 form.appendChild(br.cloneNode());
-var body = document.getElementById("body");
-body.replaceChild(form, body.childNodes[0]);
 var button = document.createElement("BUTTON");
 button.innerHTML = "Get trening";
 button.onclick = function(){submitToAPI()};
-body.appendChild(button);
+form.appendChild(button);
+var body = document.getElementById("body");
+body.replaceChild(form, body.childNodes[0]);
+
 
 
 function submitToAPI() {
@@ -63,11 +64,10 @@ $(document).ready(function () {
    fitness_level : form.elements['fitness_level'].value,
    days : form.elements['days'].value
  };
+
 $.ajax({
  type: "POST",
- url: api_base+api_deploy+getTrainig_endpoint,
- //url: "https://jhdi0t7l63.execute-api.eu-west-1.amazonaws.com/dev",
- //url: "https://t7t9jqje7k.execute-api.us-east-1.amazonaws.com/Version_1/get-plan",
+ url: constApi_site+constGetTrainig_endpoint,
  crossDomain: "true",
  dataType: "json",
  contentType: "application/json",

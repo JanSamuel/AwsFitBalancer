@@ -1,4 +1,7 @@
 function newUser() {
+  var click = document.getElementById("click");
+  click.replaceChild(br, click.childNodes[0]);
+  $("#answer").html("");
   var down = document.getElementById("answer");
   var form = document.createElement("form");
   form.id = "registry";
@@ -7,9 +10,9 @@ function newUser() {
   form.appendChild(document.createTextNode("Email : "));
   makeTextField(form, "email", "EMAIL");
   form.appendChild(document.createTextNode("Password : "));
-  makeTextField(form, "password1", "PASSWORD");
+  makePasswordField(form, "password1", "PASSWORD");
   form.appendChild(document.createTextNode("Confirm Password : "));
-  makeTextField(form, "password2", "PASSWORD");
+  makePasswordField(form, "password2", "PASSWORD");
   form.appendChild(br.cloneNode());
   var body = document.getElementById("body");
   var button = document.createElement("BUTTON");
@@ -52,13 +55,16 @@ function newUser() {
 }
 
 function loginUser() {
+  var click = document.getElementById("click");
+  click.replaceChild(br, click.childNodes[0]);
+  $("#answer").html("");
   var down = document.getElementById("answer");
   var form = document.createElement("form");
   form.id = "login";
   form.appendChild(document.createTextNode("Login : "));
   makeTextField(form, "login", "LOGIN");
   form.appendChild(document.createTextNode("Password : "));
-  makeTextField(form, "password", "PASSWORD");
+  makePasswordField(form, "password", "PASSWORD");
   form.appendChild(br.cloneNode());
   var body = document.getElementById("body");
   var button = document.createElement("BUTTON");
@@ -97,11 +103,9 @@ function loginUser() {
           if (error) {
             console.error(error);
           } else {
-            // Instantiate aws sdk service objects now that the credentials have been updated.
-            // example: var s3 = new AWS.S3();
-              $("#answer").html('Successfully logged!');
-              cognitoUser = form.elements['login'].value
-              userToken = result.getIdToken().getJwtToken();
+            cognitoUser = form.elements['login'].value;
+            userToken = result.getIdToken().getJwtToken();
+            $("#answer").html('Successfully logged!');
             console.log('Successfully logged!');
           }
         });

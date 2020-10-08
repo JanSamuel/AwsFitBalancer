@@ -16,7 +16,7 @@ function makeNumberField(form, name, maxlength, text) {
   number.name = name;
   number.maxlength = maxlength;
   number.style.marginRight = "20px";
-  
+
   form.appendChild(document.createTextNode(text));
   form.appendChild(number);
 }
@@ -26,5 +26,14 @@ function makeTextField(form, name, text) {
   textNode.type = "text";
   textNode.name = name;
   textNode.placeholder = text;
+  form.appendChild(textNode);
+}
+
+function makePasswordField(form, name, text) {
+  var textNode = document.createElement("input");
+  textNode.style.marginRight = "20px";
+  textNode.type = "password";
+  textNode.name = name;
+  textNode.placeholder = "password";
   form.appendChild(textNode);
 }

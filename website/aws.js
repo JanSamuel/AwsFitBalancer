@@ -4,6 +4,7 @@ const constApi_deploy = "Version_1/"
 const constApi_site =  constApi_base + constApi_deploy;
 
 const constGetTrainig_endpoint = "get-plan"
+const constTrackTrainig_endpoint = "track-plan"
 
 AWS.config.region = "us-east-1";
 

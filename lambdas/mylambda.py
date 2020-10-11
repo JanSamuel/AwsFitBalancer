@@ -23,6 +23,8 @@ days_dict = {3: ['Monday', 'Wednesday', 'Friday'],
              5: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
              6: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']}
 
+week_days = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
+
 ENDPOINT="mydatabase.cv33flw3gf8i.us-east-1.rds.amazonaws.com"
 PORT="5432"
 USR="db_userx"
@@ -67,53 +69,62 @@ def select_exercise_by_category(category: str):
        
     return random.choice(rows)
 
+def generate_exercise_properties(exercise, goal, bench_now, bench_after, squat_now, squat_after,
+                    deadlift_now, deadlift_after, fitness_level):
+    if exercise[2] == int(category_dict['Arms']):
+        reps = goal_repetition_dict[goal]
+        sets = 3
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (bench_now / 6. + deadlift_now / 6.), 1)
+    elif exercise[2] == int(category_dict['Legs']):
+        reps = goal_repetition_dict[goal]
+        sets = 4
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (squat_now / 2. + deadlift_now / 2.), 1)
+    elif exercise[2] == int(category_dict['Abs']):
+        reps = goal_repetition_dict[goal] * 2
+        sets = 3
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (squat_now / 10. + deadlift_now / 10. + bench_now / 10), 1)
+    elif exercise[2] == int(category_dict['Chest']):
+        reps = goal_repetition_dict[goal]
+        sets = 4
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (bench_now / 1.5), 1)
+    elif exercise[2] == int(category_dict['Back']):
+        reps = goal_repetition_dict[goal]
+        sets = 4
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (deadlift_now / 2.), 1)
+    elif exercise[2] == int(category_dict['Shoulders']):
+        reps = goal_repetition_dict[goal]
+        sets = 3
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (bench_now / 3.), 1)
+    elif exercise[2] == int(category_dict['Calves']):
+        reps = goal_repetition_dict[goal]
+        sets = 3
+        weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (squat_now / 4.), 1)
+
+    return sets, reps, weight
+
 def prepare_workout_plan(goal, bench_now, bench_after, squat_now, squat_after,
                     deadlift_now, deadlift_after, fitness_level, days):
     workout_plan = []
-    for day in days_dict[days]:
+    for day in week_days:
         workout = []
-        for x in category_dict.values():
-            exercise = select_exercise_by_category(x)
-            if exercise[2] == int(category_dict['Arms']):
-                reps = goal_repetition_dict[goal]
-                sets = 3
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (bench_now / 6. + deadlift_now / 6.), 1)
-            elif exercise[2] == int(category_dict['Legs']):
-                reps = goal_repetition_dict[goal]
-                sets = 4
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (squat_now / 2. + deadlift_now / 2.), 1)
-            elif exercise[2] == int(category_dict['Abs']):
-                reps = goal_repetition_dict[goal] * 2
-                sets = 3
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (squat_now / 10. + deadlift_now / 10. + bench_now / 10), 1)
-            elif exercise[2] == int(category_dict['Chest']):
-                reps = goal_repetition_dict[goal]
-                sets = 4
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (bench_now / 1.5), 1)
-            elif exercise[2] == int(category_dict['Back']):
-                reps = goal_repetition_dict[goal]
-                sets = 4
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (deadlift_now / 2.), 1)
-            elif exercise[2] == int(category_dict['Shoulders']):
-                reps = goal_repetition_dict[goal]
-                sets = 3
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (bench_now / 3.), 1)
-            elif exercise[2] == int(category_dict['Calves']):
-                reps = goal_repetition_dict[goal]
-                sets = 3
-                weight = round(goal_multiplier_dict[goal] * fitness_level_multiplier_dict[fitness_level] * (squat_now / 4.), 1)
-            
-            exercise_data = {"category": list(category_dict.keys())[list(category_dict.values()).index(str(exercise[2]))],
-                            "name": exercise[1],
-                            "description": exercise[3],
-                            "sets": sets,
-                            "reps": reps,
-                            "weight": weight}
-            
-            workout.append(exercise_data)
-        
+        if day in days_dict[days]:
+            for x in category_dict.values():
+                exercise = select_exercise_by_category(x)
+                sets, reps, weight = generate_exercise_properties(
+                    exercise, goal, bench_now, bench_after, squat_now, squat_after, 
+                    deadlift_now, deadlift_after, fitness_level)
+                exercise_category = list(category_dict.keys())[list(category_dict.values()).index(str(exercise[2]))]
+                exercise_data = {"name": exercise[1],
+                                "description": exercise[3],
+                                "sets": sets,
+                                "reps": reps,
+                                "weight": weight}
+                exercise_json = {exercise_category: exercise_data}
+
+                workout.append(exercise_json)
+
         workout_plan.append({day: workout})
-    
+        
     return workout_plan
 
 def handler(event, context):

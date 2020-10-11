@@ -69,6 +69,25 @@ def select_exercise_by_category(category: str):
        
     return random.choice(rows)
 
+def update_user_profile(user: str, goal: int, bench_now: float, squat_now: float, deadlift_now: float, fitness_level: int, days: int):
+    with conn.cursor() as cur:
+        try:
+            query = """
+                INSERT INTO users(username, goal, bench, squat, deadlift, level, days)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (username) DO UPDATE SET
+                (goal, bench, squat, deadlift, level, days)
+                = (EXCLUDED.goal, EXCLUDED.bench, EXCLUDED.squat, EXCLUDED.deadlift, EXCLUDED.level, EXCLUDED.days)
+                """
+
+            cur.execute(query, (user, goal, bench_now, squat_now, deadlift_now, fitness_level, days))
+        except psycopg2.IntegrityError:
+            conn.rollback()
+        else:
+            conn.commit()
+
+    return
+
 def generate_exercise_properties(exercise, goal, bench_now, bench_after, squat_now, squat_after,
                     deadlift_now, deadlift_after, fitness_level):
     if exercise[2] == int(category_dict['Arms']):
@@ -137,8 +156,9 @@ def handler(event, context):
         bench_after = float(variables['bench_after'])
         deadlift_after = float(variables['deadlift_after'])
         squat_after = float(variables['squat_after'])
-        fitness_level = float(variables['fitness_level'])
+        fitness_level = int(variables['fitness_level'])
         days = int(variables['days'])
+        user = variables['user']
     except ValueError as e:
         logger.error("ERROR: Variables passed incorrectly!")
         logger.error(e)
@@ -150,6 +170,8 @@ def handler(event, context):
             },
             'body': json.dumps(e)
         }
+
+    update_user_profile(user, goal, bench_now, squat_now, deadlift_now, fitness_level, days)
 
     workout_plan = prepare_workout_plan(goal, bench_now, bench_after, squat_now, squat_after,
                               deadlift_now, deadlift_after, fitness_level, days)

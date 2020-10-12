@@ -88,6 +88,29 @@ def update_user_profile(user: str, goal: int, bench_now: float, squat_now: float
 
     return
 
+def update_user_workout_plan(user, workout_plan):
+    with conn.cursor() as cur:
+        query = """
+            INSERT INTO workoutplan(username, day, exercise_id, sets, reps, weight)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """
+    
+        for x, day in enumerate(week_days):
+            if workout_plan[x][day]:
+                for exercise in workout_plan[x][day]:
+                    for category in exercise:
+                        print('trying to query data...')
+                        try:
+                            cur.execute(query, (user, day, exercise[category]['id'], exercise[category]['sets'], exercise[category]['reps'], exercise[category]['weight']))
+
+                        except psycopg2.IntegrityError as e:
+                            print(e)
+                            conn.rollback()
+                        else:
+                            conn.commit()
+                            
+    return
+
 def generate_exercise_properties(exercise, goal, bench_now, bench_after, squat_now, squat_after,
                     deadlift_now, deadlift_after, fitness_level):
     if exercise[2] == int(category_dict['Arms']):
@@ -137,7 +160,8 @@ def prepare_workout_plan(goal, bench_now, bench_after, squat_now, squat_after,
                                 "description": exercise[3],
                                 "sets": sets,
                                 "reps": reps,
-                                "weight": weight}
+                                "weight": weight,
+                                "id": exercise[0]}
                 exercise_json = {exercise_category: exercise_data}
 
                 workout.append(exercise_json)
@@ -175,6 +199,8 @@ def handler(event, context):
 
     workout_plan = prepare_workout_plan(goal, bench_now, bench_after, squat_now, squat_after,
                               deadlift_now, deadlift_after, fitness_level, days)
+    
+    update_user_workout_plan(user, workout_plan)
 
     return {
         'statusCode': 200,
@@ -184,3 +210,9 @@ def handler(event, context):
         },
         'body': json.dumps(workout_plan)
     }
+
+if __name__ == "__main__":
+    json_string = {"body": "{\"goal\":\"strenght\",\"bench_now\":\"100\",\"squat_now\":\"100\",\"deadlift_now\":\"100\",\"bench_after\":\"120\",\"squat_after\":\"120\",\"deadlift_after\":\"120\",\"fitness_level\":\"2\",\"days\":\"3\",\"user\":\"user1\"}"}
+    workout_plan = handler(json_string, None)
+    # workout_plan = json.loads(workout_plan)
+    # print(workout_plan["Arms"])
